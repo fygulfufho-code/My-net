@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة أفلامي - PWA</title>
+    <!-- تضمين Tailwind CSS لتحقيق تصميم عصري ومتجاوب -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* تخصيص الخط ليتناسب مع اللغة العربية مع دعم الرجوع إلى الخطوط الافتراضية */
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap');
+        :root {
+            --primary-red: #E50914;
+            --dark-bg: #141414;
+            --card-bg: #222222;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--dark-bg);
+            color: #E5E5E5;
+            direction: rtl; /* اتجاه الكتابة من اليمين لليسار */
+        }
+
+        .header-bg {
+            background-image: linear-gradient(to top, rgba(20, 20, 20, 1) 0%, rgba(20, 20, 20, 0.5) 50%, rgba(20, 20, 20, 0.2) 100%);
+        }
+
+        .movie-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            margin-left: 0.5rem; /* مسافة بين البطاقات */
+            margin-right: 0.5rem;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.8);
+            z-index: 10;
+        }
+
+        /* تحسين التمرير الأفقي للأفلام ليتناسب مع الهواتف */
+        .scroll-container {
+            overflow-x: scroll;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none; /* إخفاء شريط التمرير لـ Firefox */
+        }
+        .scroll-container::-webkit-scrollbar {
+            display: none; /* إخفاء شريط التمرير لـ Chrome/Safari */
+        }
+
+        /* تنسيق خاص بالزر الرئيسي الأحمر */
+        .btn-primary {
+            background-color: var(--primary-red);
+            transition: background-color 0.2s;
+        }
+        .btn-primary:hover {
+            background-color: #f40612;
+        }
+
+        /* تنسيق للمودال (شاشة التفاصيل) */
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+    </style>
+    <!-- إعدادات الميتا لـ PWA - تظهر كـ Add to Home Screen -->
+    <meta name="theme-color" content="#E50914"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+</head>
+<body id="app">
+
+    <!-- شريط التنقل العلوي -->
+    <header class="fixed top-0 w-full z-20 py-4 px-4 md:px-12 header-bg">
+        <div class="flex justify-between items-center max-w-7xl mx-auto">
+            <!-- الشعار -->
+            <div class="text-4xl font-extrabold text-red-600 tracking-wider">
+                فِلْمي
+            </div>
+            <!-- قائمة التنقل (للموبايل) -->
+            <nav class="hidden md:flex space-x-6 space-x-reverse text-sm font-medium">
+                <a href="#" class="text-white hover:text-gray-300">الرئيسية</a>
+                <a href="#" class="text-white hover:text-gray-300">مسلسلات</a>
+                <a href="#" class="text-white hover:text-gray-300">أفلام</a>
+                <a href="#" class="text-white hover:text-gray-300">قائمتي</a>
+            </nav>
+            <!-- أيقونات البحث والحساب -->
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <button class="text-white hover:text-gray-300">
+                    <!-- أيقونة البحث (SVG) -->
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
+                <div class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold">
+                    أ
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- القسم الرئيسي المميز (Hero Section) -->
+    <main class="pt-16 md:pt-20">
+        <section id="featured-section" class="relative h-[60vh] md:h-[80vh] overflow-hidden">
+            <!-- سيتم إضافة محتوى الفيلم المميز هنا بواسطة JavaScript -->
+        </section>
+
+        <!-- صفوف الأفلام -->
+        <div id="movie-rows" class="p-4 md:p-8">
+            <!-- سيتم إضافة صفوف الأفلام هنا بواسطة JavaScript -->
+        </div>
+    </main>
+
+    <!-- المودال (نافذة التفاصيل المنبثقة) -->
+    <div id="movie-modal" class="fixed inset-0 modal-overlay z-50 hidden items-center justify-center p-4" onclick="closeModal(event)">
+        <div id="modal-content-container" class="bg-card-bg rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <!-- سيتم إضافة تفاصيل الفيلم هنا بواسطة JavaScript -->
+        </div>
+    </div>
+
+    <!-- شريط التنقل السفلي (خاص بالموبايل) -->
+    <footer class="fixed bottom-0 w-full bg-card-bg border-t border-gray-700 md:hidden z-20">
+        <nav class="flex justify-around items-center h-14 text-xs">
+            <a href="#" class="flex flex-col items-center text-red-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5l-8 6V19h4v-4h8v4h4v-8.5l-8-6z"/></svg>
+                الرئيسية
+            </a>
+            <a href="#" class="flex flex-col items-center text-gray-400 hover:text-gray-200">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 16.5l6-4.5-6-4.5v9zM18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H6V4h12v16z"/></svg>
+                جديد
+            </a>
+            <a href="#" class="flex flex-col items-center text-gray-400 hover:text-gray-200">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M20 6H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM4 18V8h16l-.01 10H4z"/></svg>
+                قائمتي
+            </a>
+        </nav>
+    </footer>
+
+<script>
+    // بيانات أفلام وهمية (Mock Data)
+    const MOCK_MOVIES = [
+        { id: 1, title: 'قلعة الرمال', category: 'أفلام جديدة', year: 2024, duration: '2س 15د', rating: '8.5', description: 'ملحمة تاريخية عن صراع على السلطة في مملكة صحراوية قديمة.', poster: 'https://placehold.co/300x450/B794F4/ffffff?text=Sand+Castle' },
+        { id: 2, title: 'الزمن الضائع', category: 'مسلسلات درامية', year: 2023, duration: 'موسمين', rating: '9.1', description: 'مسلسل تشويق يدور حول مجموعة من الأصدقاء يعودون بالزمن لتصحيح خطأ فادح.', poster: 'https://placehold.co/300x450/4C51BF/ffffff?text=Lost+Time' },
+        { id: 3, title: 'كود سري X', category: 'أفلام أكشن', year: 2024, duration: '1س 50د', rating: '7.9', description: 'عميل سري مكلف بمهمة إنقاذ العالم من منظمة إرهابية دولية.', poster: 'https://placehold.co/300x450/2C7A7B/ffffff?text=Secret+Code+X' },
+        { id: 4, title: 'أسرار العائلة', category: 'مسلسلات درامية', year: 2022, duration: '3 مواسم', rating: '8.8', description: 'دراما اجتماعية تكشف الخفايا والأسرار المدفونة لعائلة ثرية.', poster: 'https://placehold.co/300x450/E53E3E/ffffff?text=Family+Secrets' },
+        { id: 5, title: 'مطاردة الظل', category: 'أفلام أكشن', year: 2023, duration: '2س 05د', rating: '8.2', description: 'فيلم إثارة عن محقق يحاول القبض على قاتل متسلسل مراوغ.', poster: 'https://placehold.co/300x450/D69E2E/ffffff?text=Shadow+Hunt' },
+        { id: 6, title: 'وادي النجوم', category: 'أفلام جديدة', year: 2025, duration: '1س 45د', rating: '9.4', description: 'قصة خيال علمي تدور أحداثها في مجرة بعيدة لم يكتشفها أحد.', poster: 'https://placehold.co/300x450/6B46C1/ffffff?text=Star+Valley' },
+        { id: 7, title: 'المدينة الخفية', category: 'أفلام جديدة', year: 2023, duration: '1س 55د', rating: '7.7', description: 'مغامرة مثيرة لاكتشاف مدينة أسطورية ضائعة في قلب الغابة.', poster: 'https://placehold.co/300x450/F6AD55/ffffff?text=Hidden+City' },
+        { id: 8, title: 'الوارث الأخير', category: 'مسلسلات درامية', year: 2024, duration: 'موسم واحد', rating: '9.0', description: 'صراع على وراثة إمبراطورية مالية ضخمة.', poster: 'https://placehold.co/300x450/48BB78/ffffff?text=Last+Heir' },
+        { id: 9, title: 'نقطة التحول', category: 'أفلام أكشن', year: 2022, duration: '2س 10د', rating: '8.1', description: 'تدور الأحداث حول قرار حاسم يغير مصير العالم.', poster: 'https://placehold.co/300x450/9F7AEA/ffffff?text=Turning+Point' },
+    ];
+
+    const FEATURED_MOVIE = MOCK_MOVIES[0];
+
+    // --- وظائف العرض (Rendering Functions) ---
+
+    /**
+     * يحول بيانات الفيلم إلى بطاقة HTML
+     * @param {Object} movie - كائن بيانات الفيلم.
+     */
+    function createMovieCard(movie) {
+        return `
+            <div class="movie-card bg-card-bg w-40 flex-shrink-0 rounded-lg overflow-hidden" onclick="openModal(${movie.id})">
+                <img src="${movie.poster}" alt="${movie.title}" class="w-full h-auto object-cover transform duration-300" onerror="this.onerror=null; this.src='https://placehold.co/300x450/000000/ffffff?text=Poster';">
+            </div>
+        `;
+    }
+
+    /**
+     * يقوم بعرض الصف المميز (Featured)
+     */
+    function renderFeatured() {
+        const section = document.getElementById('featured-section');
+        section.innerHTML = `
+            <div class="absolute inset-0">
+                <!-- صورة خلفية كبيرة (Placeholder) -->
+                <img src="https://placehold.co/1920x1080/434857/ffffff?text=Featured+Movie+Background"
+                     alt="خلفية الفيلم المميز"
+                     class="w-full h-full object-cover opacity-30">
+            </div>
+            <div class="absolute inset-0 flex items-end header-bg">
+                <div class="max-w-7xl mx-auto p-4 md:p-12 w-full">
+                    <h1 class="text-3xl md:text-6xl font-extrabold text-white mb-2">${FEATURED_MOVIE.title}</h1>
+                    <p class="text-lg md:text-2xl text-red-600 font-bold mb-4">مميز • ${FEATURED_MOVIE.year}</p>
+                    <p class="text-sm md:text-base max-w-lg mb-6 line-clamp-3">${FEATURED_MOVIE.description}</p>
+                    <div class="flex space-x-4 space-x-reverse">
+                        <button class="flex items-center bg-white text-black font-bold py-2 px-6 rounded-lg text-lg hover:bg-gray-300 transition" onclick="openModal(${FEATURED_MOVIE.id})">
+                            <!-- أيقونة التشغيل -->
+                            <svg class="w-6 h-6 ml-2" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            شاهد الآن
+                        </button>
+                        <button class="flex items-center bg-gray-600 text-white font-bold py-2 px-6 rounded-lg text-lg hover:bg-gray-700 transition">
+                            <!-- أيقونة المزيد -->
+                            <svg class="w-6 h-6 ml-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                            معلومات
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * يقوم بعرض صفوف الأفلام بناءً على التصنيفات
+     */
+    function renderMovieRows() {
+        const container = document.getElementById('movie-rows');
+        const categories = [...new Set(MOCK_MOVIES.map(movie => movie.category))];
+
+        container.innerHTML = categories.map(category => {
+            const moviesInCategory = MOCK_MOVIES.filter(movie => movie.category === category);
+            return `
+                <div class="mb-8">
+                    <h2 class="text-xl md:text-3xl font-bold mb-4 mr-4">${category}</h2>
+                    <div class="scroll-container flex flex-row pb-2">
+                        ${moviesInCategory.map(createMovieCard).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // إضافة تذييل للموبايل لإزاحة المحتوى فوق شريط التنقل السفلي
+        if (window.innerWidth < 768) {
+            container.classList.add('mb-14');
+        }
+    }
+
+
+    // --- وظائف المودال (Modal Functions) ---
+
+    /**
+     * يفتح نافذة التفاصيل المنبثقة للفيلم المحدد
+     * @param {number} movieId - معرّف الفيلم.
+     */
+    function openModal(movieId) {
+        const movie = MOCK_MOVIES.find(m => m.id === movieId);
+        if (!movie) return;
+
+        const modalContent = document.getElementById('modal-content-container');
+        modalContent.innerHTML = `
+            <div class="relative">
+                <!-- صورة غلاف الفيلم داخل المودال -->
+                <img src="${movie.poster.replace('300x450', '800x450')}" alt="${movie.title}" class="w-full h-auto object-cover rounded-t-lg">
+                
+                <!-- زر الإغلاق -->
+                <button class="absolute top-4 left-4 bg-black bg-opacity-70 text-white rounded-full p-2 hover:bg-opacity-90 transition" onclick="closeModal()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+
+                <div class="p-6 md:p-8">
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-red-600 mb-2">${movie.title}</h2>
+                    <p class="text-gray-400 text-sm mb-4">السنة: ${movie.year} | المدة/المواسم: ${movie.duration} | التقييم: ${movie.rating} ⭐</p>
+
+                    <button class="btn-primary flex items-center text-white font-bold py-3 px-8 rounded-lg text-xl hover:opacity-90 transition mb-6 w-full justify-center md:w-auto">
+                        <!-- أيقونة التشغيل -->
+                        <svg class="w-6 h-6 ml-2" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        تشغيل الفيلم/الحلقة
+                    </button>
+
+                    <p class="text-base text-gray-300 mb-4">${movie.description}</p>
+                    
+                    <h3 class="text-xl font-bold mt-6 mb-3">تفاصيل إضافية</h3>
+                    <ul class="list-disc list-inside text-gray-400 space-y-1">
+                        <li>النوع: ${movie.category}</li>
+                        <li>الممثلون الرئيسيون: (سيتم جلبهم من قاعدة بيانات حقيقية)</li>
+                        <li>تاريخ العرض: 2024/05/10</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('movie-modal').classList.remove('hidden');
+        document.getElementById('movie-modal').classList.add('flex');
+    }
+
+    /**
+     * يغلق نافذة التفاصيل المنبثقة.
+     * @param {Event} event - حدث النقر (اختياري).
+     */
+    function closeModal(event) {
+        // إذا كان النقر على الخلفية الرمادية، أغلق المودال
+        if (!event || event.target.id === 'movie-modal') {
+            document.getElementById('movie-modal').classList.add('hidden');
+            document.getElementById('movie-modal').classList.remove('flex');
+        }
+    }
+
+    // --- تهيئة التطبيق (Initialization) ---
+
+    window.onload = function() {
+        renderFeatured();
+        renderMovieRows();
+        
+        // --- تهيئة PWA وتسجيل الـ Service Worker ---
+        // ملاحظة: هذا الكود يقوم بالتسجيل فقط. لتحقيق العمل بدون إنترنت، 
+        // يجب إنشاء ملف 'service-worker.js' حقيقي يتضمن منطق التخزين المؤقت (Caching)
+
+        if ('serviceWorker' in navigator) {
+            // يتم تسجيل Service Worker
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('تم تسجيل Service Worker بنجاح. النطاق:', registration.scope);
+                })
+                .catch(error => {
+                    console.error('فشل تسجيل Service Worker:', error);
+                    // في بيئة التشغيل هذه (iFrame/Canvas)، قد يفشل التسجيل وهو أمر متوقع.
+                    // يتم إظهار رسالة للمستخدم عن الحاجة للتثبيت
+                    showOfflineTip();
+                });
+        } else {
+            showOfflineTip();
+        }
+    };
+
+    function showOfflineTip() {
+        // وظيفة بسيطة لعرض رسالة للمستخدم
+        const tipDiv = document.createElement('div');
+        tipDiv.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-yellow-600 text-white p-3 rounded-lg shadow-lg text-sm z-30';
+        tipDiv.innerHTML = '💡 **للتشغيل بدون إنترنت**: قم بتثبيت التطبيق عبر قائمة المتصفح (Add to Home Screen).';
+        document.body.appendChild(tipDiv);
+        setTimeout(() => tipDiv.remove(), 8000); // إزالة الرسالة بعد 8 ثوان
+    }
+
+</script>
+</body>
+</html>
+
